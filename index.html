@@ -131,10 +131,10 @@
         </div>
         
         <div class="btn-group">
-            <button class="btn-dist" id="btnPrevDist">◀ -0.50m</button>
-            <button class="btn-dist" id="btnNextDist">+0.50m ▶</button> <br>
-            <button class="btn-time" id="btnPrevTime">◀ -0.50s</button>
-            <button class="btn-time" id="btnNextTime"> +0.50s  ▶</button><br>
+            droga <button class="btn-dist" id="btnPrevDist">◀ -0.50m</button>
+            <button class="btn-dist" id="btnNextDist">+0.50m ▶</button>
+            czas <button class="btn-time" id="btnPrevTime">◀ -0.50s</button>
+            <button class="btn-time" id="btnNextTime"> +0.50s  ▶</button>
             <button class="btn-play" id="btnStartStop">Uruchom</button>
             <button class="btn-reset" id="btnReset">Reset</button>
         </div>
@@ -183,9 +183,9 @@
         lblAccel.textContent = accel.toFixed(1);
         lblStep.textContent = stepValue.toFixed(2);
 
-        btnPrevDist.textContent = `◀ -${stepValue.toFixed(2)}m (Droga)`;
+        btnPrevDist.textContent = `◀ -${stepValue.toFixed(2)}m`;
         btnNextDist.textContent = `+${stepValue.toFixed(2)}m ▶`;
-        btnPrevTime.textContent = `◀ -${stepValue.toFixed(2)}s (Czas)`;
+        btnPrevTime.textContent = `◀ -${stepValue.toFixed(2)}s`;
         btnNextTime.textContent = `+${stepValue.toFixed(2)}s ▶`;
     }
 
