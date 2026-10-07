@@ -111,9 +111,11 @@
     <div class="stats">
         <div>Czas: <span id="valTime">0.00</span> s</div>
         <div>Droga: <span id="valDist">0.00</span> m</div>
-        <div>Prędkość: <span id="valSpeed">0.00</span> m/s</div>
+        <!--
+		<div>Prędkość: <span id="valSpeed">0.00</span> m/s</div>
         <div>Przyspieszenie: <span id="valAccel">1.50</span> m/s²</div>
-    </div>
+		-->
+	</div>
 
     <div class="controls">
         <div class="control-row">
@@ -132,9 +134,9 @@
             <button class="btn-dist" id="btnPrevDist">◀ -0.50m (Droga)</button>
             <button class="btn-time" id="btnPrevTime">◀ -0.50s (Czas)</button>
             <button class="btn-play" id="btnStartStop">Uruchom</button>
+            <button class="btn-reset" id="btnReset">Reset</button>
             <button class="btn-time" id="btnNextTime">(Czas) +0.50s ▶</button>
             <button class="btn-dist" id="btnNextDist">(Droga) +0.50m ▶</button>
-            <button class="btn-reset" id="btnReset">Reset</button>
         </div>
     </div>
     <div class="footer">© Wacław Libront • Bobowa 2026</div>
@@ -158,8 +160,8 @@
 
     const valTime = document.getElementById('valTime');
     const valDist = document.getElementById('valDist');
-    const valSpeed = document.getElementById('valSpeed');
-    const valAccel = document.getElementById('valAccel');
+    const valSpeed = 0 //document.getElementById('valSpeed');
+    const valAccel = 0 //document.getElementById('valAccel');
 
     const PIXELS_PER_METER = 28; 
     const TRACK_LENGTH_METERS = 100; 
