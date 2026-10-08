@@ -3,365 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symulator: Ruch jednostajnie przyspieszony</title>
+    <title>Laboratorium Fizyczne - Ruch Przyspieszony</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0px;
+            background-color: #f9f9f9;
+            color: #333;
+            text-align: center;
         }
-        h1 { color: #333; margin-bottom: 10px; font-size: 24px; text-align: center; }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 850px;
-            width: 100%;
+        h2 {
+            margin-bottom: 20px;
         }
-        canvas {
-            background: #eef2f7;
-            border-radius: 8px;
-            display: block;
-            margin: 0 auto;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            background: #fafafa;
+        .config-box {
+            background: #fff;
             padding: 15px;
             border-radius: 8px;
-        }
-        .control-row {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-        .control-group {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
-            min-width: 250px;
-            flex: 1;
-            max-width: 350px;
-        }
-        label { font-size: 14px; font-weight: bold; color: #555; text-align: center; }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-            padding: 10px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            color: #2e7d32;
-            flex-wrap: wrap;
             gap: 10px;
         }
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            flex-wrap: wrap;
-            margin-top: 5px;
-        }
-        button {
-            padding: 10px 14px;
-            font-size: 13px;
+        label {
             font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            font-size: 1.1em;
         }
-        button:active { transform: scale(0.98); }
-        .btn-play { background: #28a745; color: white; padding: 12px 24px; font-size: 14px; }
-        .btn-play:hover { background: #218838; }
-        .btn-dist { background: #007bff; color: white; }
-        .btn-dist:hover { background: #0069d9; }
-        .btn-time { background: #17a2b8; color: white; }
-        .btn-time:hover { background: #138496; }
-        .btn-reset { background: #dc3545; color: white; }
-        .btn-reset:hover { background: #bd2130; }
-        input[type="range"] { width: 100%; cursor: pointer; }
-        .footer { font-size: 11px; color: #777; text-align: center; margin-top: 15px; }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="range"] {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+        .nr-val {
+            font-size: 2.3em;
+            font-weight: bold;
+            color: #e67e22;
+            min-width: 30px;
+        }
+        
+        /* Laboratorium - Animacja drogi i auta */
+        .track-container {
+            background: #f0f3f4;
+            padding: 30px 10px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-text {
+            font-size: 3.3em;
+            font-weight: bold;
+            font-family: monospace;
+            z-index: 2;
+            background: rgba(240, 243, 244, 0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        /* Ruchome podłoże */
+        .road-environment {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: #555;
+            overflow: hidden;
+        }
+        .road-lines {
+            position: absolute;
+            top: 18px;
+            left: 0;
+            width: 200%;
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #fff, #fff 20px, transparent 20px, transparent 40px);
+        }
+
+        /* Większy samochód (nieruchomy na środku) */
+        .car {
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            width: 70px;
+            height: 32px;
+            background: #cc2929;
+            border-radius: 6px 12px 4px 4px;
+            transform: translateX(-50%);
+            z-index: 3;
+            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
+        }
+        /* Szyby samochodu */
+        .car::before {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: 15px;
+            width: 35px;
+            height: 15px;
+            background: #aadaff;
+            border-radius: 12px 12px 0 0;
+            border: 2px solid #cc2929;
+            box-sizing: border-box;
+        }
+        .car-wheels {
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 6px;
+            box-sizing: border-box;
+        }
+        .wheel {
+            width: 18px;
+            height: 18px;
+            background: #222;
+            border-radius: 50%;
+            border: 2px dashed #999; /* Linie przerywane pokazujące obrót */
+            box-sizing: border-box;
+        }
+
+        /* Pomarańczowy okrągły przycisk */
+        .start-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background-color: #e67e22;
+            border: 4px solid #d35400;
+            color: white;
+            font-size: 2.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            outline: none;
+            transition: transform 0.05s, background-color 0.2s;
+            margin: 15px auto;
+            display: block;
+        }
+        .start-btn:active {
+            transform: scale(0.93);
+            background-color: #d35400;
+        }
+        .start-btn:disabled {
+            background-color: #bdc3c7;
+            border-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .counter-text {
+            font-size: 1.1em;
+            margin: 10px 0;
+            font-weight: 500;
+            color: #666;
+        }
+
+        /* Tabela wyników pod przyciskiem */
+        .table-container {
+            margin-top: 25px;
+            display: none;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .reset-btn:hover { background: #95a5a6; }
     </style>
 </head>
 <body>
 
-<h1>Ruch jednostajnie przyspieszony</h1>
-
-<div class="container">
-    <canvas id="simCanvas" width="850" height="100"></canvas>
-
-    <div class="stats">
-        <div>Czas: <span id="valTime">0.00</span> s</div>
-        <div>Droga: <span id="valDist">0.00</span> m</div>
-        <!--
-		<div>Prędkość: <span id="valSpeed">0.00</span> m/s</div>
-        <div>Przyspieszenie: <span id="valAccel">1.50</span> m/s²</div>
-		-->
-	</div>
-
-    <div class="controls">
-        <div class="control-row">
-            <div class="control-group">
-                <label for="inputAccel">Przyspieszenie pojazdu: <span id="lblAccel">0.5</span> m/s²</label>
-                <input type="range" id="inputAccel" min="0.1" max="5" value="0.5" step="0.1">
-            </div>
-            
-            <div class="control-group">
-                <label for="inputStep">Wartość skoku (±): <span id="lblStep">0.50</span></label>
-                <input type="range" id="inputStep" min="0" max="1" value="0.50" step="0.01">
-            </div>
-        </div>
-        
-        <div class="btn-group">
-            droga <button class="btn-dist" id="btnPrevDist">◀ -0.50m</button>
-            <button class="btn-dist" id="btnNextDist">+0.50m ▶</button>
-            czas <button class="btn-time" id="btnPrevTime">◀ -0.50s</button>
-            <button class="btn-time" id="btnNextTime"> +0.50s  ▶</button>
-            <button class="btn-play" id="btnStartStop">Uruchom</button>
-            <button class="btn-reset" id="btnReset">Reset</button>
+    <h2>Ruch Przyspieszony</h2>
+    <div class="footer">© Wacław Libront • Bobowa 2026</div><br>
+    <div class="config-box">
+        <label for="nrSlider">Wybierz swój numer z dziennika:</label>
+        <div class="slider-container">
+            <input type="range" id="nrSlider" min="1" max="40" value="11" oninput="updateNr(this.value)">
+            <span class="nr-val" id="nrDisplay">11</span>
         </div>
     </div>
-    <div class="footer">© Wacław Libront • Bobowa 2026</div>
-</div>
 
-<script>
-    const canvas = document.getElementById('simCanvas');
-    const ctx = canvas.getContext('2d');
+    <div class="track-container">
+        <div class="status-text" id="liveTime">0,00 s</div>
+        
+        <!-- Nieruchome auto -->
+        <div class="car">
+            <div class="car-wheels">
+                <div class="wheel" id="wheel1"></div>
+                <div class="wheel" id="wheel2"></div>
+            </div>
+        </div>
 
-    const inputAccel = document.getElementById('inputAccel');
-    const lblAccel = document.getElementById('lblAccel');
-    const inputStep = document.getElementById('inputStep');
-    const lblStep = document.getElementById('lblStep');
+        <!-- Przesuwające się elementy drogi -->
+        <div class="road-environment">
+            <div class="road-lines" id="roadLines"></div>
+        </div>
+    </div>
 
-    const btnStartStop = document.getElementById('btnStartStop');
-    const btnPrevDist = document.getElementById('btnPrevDist');
-    const btnNextDist = document.getElementById('btnNextDist');
-    const btnPrevTime = document.getElementById('btnPrevTime');
-    const btnNextTime = document.getElementById('btnNextTime');
-    const btnReset = document.getElementById('btnReset');
+    <button class="start-btn" id="actionBtn" onclick="handleButtonClick()">START</button>
+    <div class="counter-text" id="clickCounter"></div>
 
-    const valTime = document.getElementById('valTime');
-    const valDist = document.getElementById('valDist');
-    const valSpeed = 0 //document.getElementById('valSpeed');
-    const valAccel = 0 //document.getElementById('valAccel');
+    <div class="table-container" id="resultsContainer">
+        <h3>Wyniki pomiarów w ruchu przyspieszonym</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>czas [s]</th>
+                    <th>droga [m]</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+                <!-- Wiersze generowane dynamicznie -->
+            </tbody>
+        </table>
+        <button class="reset-btn" onclick="resetLab()">Zresetuj układ i spróbuj ponownie</button>
+    </div>
 
-    const PIXELS_PER_METER = 28; 
-    const TRACK_LENGTH_METERS = 100; 
-    const startX = 30;
-    const trackY = 60; 
+    <script>
+        let nr = 11;
+        let acceleration = 0;
+        let startTime = null;
+        let animationFrameId = null;
+        
+        let clickCount = 0;
+        const maxClicks = 10; // Jeden pomiar więcej (0 + 11 kliknięć)
+        let measurements = [];
+        
+        // Zmienne do płynnej animacji przesunięcia tła i kół
+        let roadPosition = 0;
+        let wheelRotation = 0;
+        let lastTimestamp = null;
 
-    let accel = parseFloat(inputAccel.value);
-    let stepValue = parseFloat(inputStep.value);
-    let time = 0; 
-    let currentDistance = 0; 
-    let isRunning = false; 
-    let lastTimestamp = null;
+        const nrSlider = document.getElementById('nrSlider');
+        const nrDisplay = document.getElementById('nrDisplay');
+        const liveTime = document.getElementById('liveTime');
+        const actionBtn = document.getElementById('actionBtn');
+        const clickCounter = document.getElementById('clickCounter');
+        const roadLines = document.getElementById('roadLines');
+        const wheel1 = document.getElementById('wheel1');
+        const wheel2 = document.getElementById('wheel2');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsTableBody = document.getElementById('resultsTableBody');
 
-    function updateHUD() {
-        valTime.textContent = time.toFixed(2);
-        valDist.textContent = currentDistance.toFixed(2);
-        valSpeed.textContent = (accel * time).toFixed(2);
-        valAccel.textContent = accel.toFixed(2);
-        lblAccel.textContent = accel.toFixed(1);
-        lblStep.textContent = stepValue.toFixed(2);
+        function initLab() {
+            nr = parseInt(nrSlider.value);
+            // Obliczenie przyspieszenia ze wzoru: a = 5 * NR * 0.5
+            acceleration = 5 * nr * 0.5;
+            
+            liveTime.innerText = "0,00 [s]";
+            //clickCounter.innerText = `Pomiar: 0`;
+            actionBtn.innerText = "START";
+            actionBtn.disabled = false;
+            resultsContainer.style.display = "none";
+            measurements = [];
+            clickCount = 0;
+            roadPosition = 0;
+            wheelRotation = 0;
+            lastTimestamp = null;
+            
+            roadLines.style.transform = `translateX(0px)`;
+            wheel1.style.transform = `rotate(0deg)`;
+            wheel2.style.transform = `rotate(0deg)`;
+        }
 
-        btnPrevDist.textContent = `◀ -${stepValue.toFixed(2)}m`;
-        btnNextDist.textContent = `+${stepValue.toFixed(2)}m ▶`;
-        btnPrevTime.textContent = `◀ -${stepValue.toFixed(2)}s`;
-        btnNextTime.textContent = `+${stepValue.toFixed(2)}s ▶`;
-    }
+        function updateNr(val) {
+            nrDisplay.innerText = val;
+            cancelAnimationFrame(animationFrameId);
+            initLab();
+        }
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const trackLengthPx = TRACK_LENGTH_METERS * PIXELS_PER_METER;
+        function handleButtonClick() {
+            const now = performance.now();
 
-        ctx.beginPath();
-        ctx.moveTo(startX, trackY);
-        ctx.lineTo(startX + trackLengthPx, trackY);
-        ctx.strokeStyle = '#455a64';
-        ctx.lineWidth = 4;
-        ctx.stroke();
+            if (clickCount === 0) {
+                // START eksperymentu
+                startTime = now;
+                lastTimestamp = now;
+                actionBtn.innerText = "1"//`${clickCount}`
+               
+                // Zapisujemy punkt zero na start listy pomiarowej
+                measurements.push({ time: 0, distance: 0 });
 
-        const carX = startX + currentDistance * PIXELS_PER_METER;
+                // Główna pętla animacji (częstotliwość ekranu - bardzo płynny ruch i obrót kół)
+                function animate(currentTimestamp) {
+                    if (!startTime) return;
+                    
+                    const elapsed = (currentTimestamp - startTime) / 1000;
+                    liveTime.innerText = `${elapsed.toFixed(2).replace('.', ',')} [s]`;
+                    
+                    // Bieżąca prędkość w ruchu przyspieszonym: v = a * t
+                    const currentVelocity = acceleration * elapsed;
+                    
+                    // Różnica czasu od poprzedniej klatki animacji
+                    const deltaTime = (currentTimestamp - lastTimestamp) / 1000;
+                    lastTimestamp = currentTimestamp;
 
-        ctx.beginPath();
-        ctx.moveTo(carX, trackY - 40);
-        ctx.lineTo(carX, trackY + 20);
-        ctx.strokeStyle = '#ffeb3b';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+                    // Przesuwamy drogę proporcjonalnie do narastającej prędkości
+                    roadPosition -= currentVelocity * deltaTime * 15;
+                    if (roadPosition <= -40) {
+                        roadPosition %= 40; // Zapętlenie tekstury pasów na jezdni
+                    }
+                    roadLines.style.transform = `translateX(${roadPosition}px)`;
 
-        ctx.save();
-        ctx.translate(startX, trackY);
-        ctx.strokeStyle = '#263238';
-        ctx.fillStyle = '#263238';
-        ctx.font = '11px sans-serif';
-        ctx.textAlign = 'center';
+                    // Obracamy koła proporcjonalnie do prędkości liniowej
+                    wheelRotation += currentVelocity * deltaTime * 40;
+                    wheel1.style.transform = `rotate(${wheelRotation}deg)`;
+                    wheel2.style.transform = `rotate(${wheelRotation}deg)`;
 
-        for (let m = 0; m <= TRACK_LENGTH_METERS; m++) {
-            const pxPos = m * PIXELS_PER_METER;
-            ctx.beginPath();
-            if (m % 5 === 0) {
-                ctx.moveTo(pxPos, 0);
-                ctx.lineTo(pxPos, 12);
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.fillText(m + 'm', pxPos, 24);
-            } else {
-                ctx.moveTo(pxPos, 0);
-                ctx.lineTo(pxPos, 6);
-                ctx.lineWidth = 1;
-                ctx.stroke();
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+                
+                animationFrameId = requestAnimationFrame(animate);
+                clickCount++;
+                //clickCounter.innerText = `Pomiar: ${clickCount-1}`;
+                return;
+            }
+
+            // Kolejne kliknięcia typu KLIK (zbieranie pomiarów)
+            const elapsed = (now - startTime) / 1000;
+            // Obliczenie drogi: s = 0.5 * a * t^2
+            const currentDistance = 0.5 * acceleration * elapsed * elapsed;
+
+            measurements.push({
+                time: elapsed,
+                distance: currentDistance
+            });
+
+            clickCount++;
+            //clickCounter.innerText = `Pomiar: ${clickCount-1}`;
+			actionBtn.innerText = `${clickCount}`
+			
+            if (clickCount > maxClicks) {
+                // Zakończenie serii pomiarów po zebraniu 11 pozycji typu KLIK
+                cancelAnimationFrame(animationFrameId);
+                startTime = null;
+                actionBtn.disabled = true;
+                actionBtn.innerText = "KONIEC";
+                showResultsTable();
             }
         }
-        ctx.restore();
 
-        ctx.save();
-        ctx.translate(carX, trackY);
-
-        ctx.fillStyle = '#d32f2f';
-        ctx.fillRect(-22, -22, 44, 13);
-        ctx.fillStyle = '#9a0007';
-        ctx.fillRect(-12, -30, 22, 8);
-        ctx.fillStyle = '#111';
-        ctx.beginPath();
-        ctx.arc(-12, -4, 5, 0, Math.PI * 2);
-        ctx.arc(12, -4, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(0, -30);
-        ctx.lineTo(0, -4);
-        ctx.strokeStyle = '#ffeb3b';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    function loop(timestamp) {
-        if (!lastTimestamp) lastTimestamp = timestamp;
-
-        if (isRunning) {
-            const dt = (timestamp - lastTimestamp) / 1000;
-            time += dt;
-            currentDistance = 0.5 * accel * time * time;
-
-            if (currentDistance >= TRACK_LENGTH_METERS) {
-                currentDistance = TRACK_LENGTH_METERS;
-                time = Math.sqrt((2 * currentDistance) / accel);
-                isRunning = false;
-                updateButtonState();
-            }
+        function showResultsTable() {
+            resultsTableBody.innerHTML = "";
+            
+            measurements.forEach(m => {
+                const tr = document.createElement('tr');
+                const tdTime = document.createElement('td');
+                const tdDist = document.createElement('td');
+                
+                // Formatowanie z przecinkiem dziesiętnym dla uczniów
+                tdTime.innerText = m.time.toFixed(2).replace('.', ',');
+                tdDist.innerText = m.distance.toFixed(2).replace('.', ',');
+                
+                tr.appendChild(tdTime);
+                tr.appendChild(tdDist);
+                resultsTableBody.appendChild(tr);
+            });
+            
+            resultsContainer.style.display = "block";
+            // Płynne przewinięcie ekranu w dół do gotowej tabeli
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
-        lastTimestamp = timestamp;
-        updateHUD();
-        draw();
-        requestAnimationFrame(loop);
-    }
-
-    function updateButtonState() {
-        btnStartStop.textContent = isRunning ? "Zatrzymaj" : "Uruchom";
-        btnStartStop.style.background = isRunning ? "#007bff" : "#28a745";
-    }
-
-    inputAccel.addEventListener('input', (e) => {
-        accel = parseFloat(e.target.value);
-        if (currentDistance > 0 && accel > 0) {
-            time = Math.sqrt((2 * currentDistance) / accel);
-        } else {
-            time = 0;
+        function resetLab() {
+            cancelAnimationFrame(animationFrameId);
+            startTime = null;
+            initLab();
         }
-        updateHUD();
-        draw();
-    });
 
-    inputStep.addEventListener('input', (e) => {
-        stepValue = parseFloat(e.target.value);
-        updateHUD();
-    });
-
-    btnStartStop.addEventListener('click', () => {
-        if (!isRunning && currentDistance >= TRACK_LENGTH_METERS) {
-            currentDistance = 0;
-            time = 0;
-        }
-        isRunning = !isRunning;
-        updateButtonState();
-    });
-
-    btnPrevDist.addEventListener('click', () => {
-        isRunning = false;
-        updateButtonState();
-        currentDistance = Math.max(0, currentDistance - stepValue);
-        time = Math.sqrt((2 * currentDistance) / accel);
-        updateHUD();
-        draw();
-    });
-
-    btnNextDist.addEventListener('click', () => {
-        isRunning = false;
-        updateButtonState();
-        currentDistance = Math.min(TRACK_LENGTH_METERS, currentDistance + stepValue);
-        time = Math.sqrt((2 * currentDistance) / accel);
-        updateHUD();
-        draw();
-    });
-
-    btnPrevTime.addEventListener('click', () => {
-        isRunning = false;
-        updateButtonState();
-        time = Math.max(0, time - stepValue);
-        currentDistance = 0.5 * accel * time * time;
-        updateHUD();
-        draw();
-    });
-
-    btnNextTime.addEventListener('click', () => {
-        isRunning = false;
-        updateButtonState();
-        time += stepValue;
-        currentDistance = 0.5 * accel * time * time;
-        if (currentDistance >= TRACK_LENGTH_METERS) {
-            currentDistance = TRACK_LENGTH_METERS;
-            time = Math.sqrt((2 * currentDistance) / accel);
-        }
-        updateHUD();
-        draw();
-    });
-
-    btnReset.addEventListener('click', () => {
-        isRunning = false;
-        updateButtonState();
-        currentDistance = 0;
-        time = 0;
-        updateHUD();
-        draw();
-    });
-
-    updateHUD();
-    draw();
-    requestAnimationFrame(loop);
-</script>
-
+        // Pierwsze uruchomienie przy załadowaniu strony
+        initLab();
+    </script>
 </body>
 </html>

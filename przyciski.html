@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symulator: Ruch jednostajnie przyspieszony</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 24px; text-align: center; }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 850px;
+            width: 100%;
+        }
+        canvas {
+            background: #eef2f7;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .control-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 250px;
+            flex: 1;
+            max-width: 350px;
+        }
+        label { font-size: 14px; font-weight: bold; color: #555; text-align: center; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2e7d32;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        button {
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-play { background: #28a745; color: white; padding: 12px 24px; font-size: 14px; }
+        .btn-play:hover { background: #218838; }
+        .btn-dist { background: #007bff; color: white; }
+        .btn-dist:hover { background: #0069d9; }
+        .btn-time { background: #17a2b8; color: white; }
+        .btn-time:hover { background: #138496; }
+        .btn-reset { background: #dc3545; color: white; }
+        .btn-reset:hover { background: #bd2130; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .footer { font-size: 11px; color: #777; text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<h1>Ruch jednostajnie przyspieszony</h1>
+
+<div class="container">
+    <canvas id="simCanvas" width="850" height="100"></canvas>
+
+    <div class="stats">
+        <div>Czas: <span id="valTime">0.00</span> s</div>
+        <div>Droga: <span id="valDist">0.00</span> m</div>
+        <!--
+		<div>Prędkość: <span id="valSpeed">0.00</span> m/s</div>
+        <div>Przyspieszenie: <span id="valAccel">1.50</span> m/s²</div>
+		-->
+	</div>
+
+    <div class="controls">
+        <div class="control-row">
+            <div class="control-group">
+                <label for="inputAccel">Przyspieszenie pojazdu: <span id="lblAccel">0.5</span> m/s²</label>
+                <input type="range" id="inputAccel" min="0.1" max="5" value="0.5" step="0.1">
+            </div>
+            
+            <div class="control-group">
+                <label for="inputStep">Wartość skoku (±): <span id="lblStep">0.50</span></label>
+                <input type="range" id="inputStep" min="0" max="1" value="0.50" step="0.01">
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            droga <button class="btn-dist" id="btnPrevDist">◀ -0.50 m</button>
+            <button class="btn-dist" id="btnNextDist">+0.50 m ▶</button>
+            czas <button class="btn-time" id="btnPrevTime">◀ -0.50 s</button>
+            <button class="btn-time" id="btnNextTime"> +0.50 s  ▶</button>
+            <button class="btn-play" id="btnStartStop">Uruchom</button>
+            <button class="btn-reset" id="btnReset">Reset</button>
+        </div>
+    </div>
+    <div class="footer">© Wacław Libront • Bobowa 2026</div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const inputAccel = document.getElementById('inputAccel');
+    const lblAccel = document.getElementById('lblAccel');
+    const inputStep = document.getElementById('inputStep');
+    const lblStep = document.getElementById('lblStep');
+
+    const btnStartStop = document.getElementById('btnStartStop');
+    const btnPrevDist = document.getElementById('btnPrevDist');
+    const btnNextDist = document.getElementById('btnNextDist');
+    const btnPrevTime = document.getElementById('btnPrevTime');
+    const btnNextTime = document.getElementById('btnNextTime');
+    const btnReset = document.getElementById('btnReset');
+
+    const valTime = document.getElementById('valTime');
+    const valDist = document.getElementById('valDist');
+    const valSpeed = 0 //document.getElementById('valSpeed');
+    const valAccel = 0 //document.getElementById('valAccel');
+
+    const PIXELS_PER_METER = 28; 
+    const TRACK_LENGTH_METERS = 100; 
+    const startX = 30;
+    const trackY = 60; 
+
+    let accel = parseFloat(inputAccel.value);
+    let stepValue = parseFloat(inputStep.value);
+    let time = 0; 
+    let currentDistance = 0; 
+    let isRunning = false; 
+    let lastTimestamp = null;
+
+    function updateHUD() {
+        valTime.textContent = time.toFixed(2);
+        valDist.textContent = currentDistance.toFixed(2);
+        valSpeed.textContent = (accel * time).toFixed(2);
+        valAccel.textContent = accel.toFixed(2);
+        lblAccel.textContent = accel.toFixed(1);
+        lblStep.textContent = stepValue.toFixed(2);
+
+        btnPrevDist.textContent = `◀ -${stepValue.toFixed(2)} m`;
+        btnNextDist.textContent = `+${stepValue.toFixed(2)} m ▶`;
+        btnPrevTime.textContent = `◀ -${stepValue.toFixed(2)} s`;
+        btnNextTime.textContent = `+${stepValue.toFixed(2)} s ▶`;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const trackLengthPx = TRACK_LENGTH_METERS * PIXELS_PER_METER;
+
+        ctx.beginPath();
+        ctx.moveTo(startX, trackY);
+        ctx.lineTo(startX + trackLengthPx, trackY);
+        ctx.strokeStyle = '#455a64';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        const carX = startX + currentDistance * PIXELS_PER_METER;
+
+        ctx.beginPath();
+        ctx.moveTo(carX, trackY - 40);
+        ctx.lineTo(carX, trackY + 20);
+        ctx.strokeStyle = '#ffeb3b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(startX, trackY);
+        ctx.strokeStyle = '#263238';
+        ctx.fillStyle = '#263238';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+
+        for (let m = 0; m <= TRACK_LENGTH_METERS; m++) {
+            const pxPos = m * PIXELS_PER_METER;
+            ctx.beginPath();
+            if (m % 5 === 0) {
+                ctx.moveTo(pxPos, 0);
+                ctx.lineTo(pxPos, 12);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillText(m + 'm', pxPos, 24);
+            } else {
+                ctx.moveTo(pxPos, 0);
+                ctx.lineTo(pxPos, 6);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(carX, trackY);
+
+        ctx.fillStyle = '#d32f2f';
+        ctx.fillRect(-22, -22, 44, 13);
+        ctx.fillStyle = '#9a0007';
+        ctx.fillRect(-12, -30, 22, 8);
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(-12, -4, 5, 0, Math.PI * 2);
+        ctx.arc(12, -4, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, -30);
+        ctx.lineTo(0, -4);
+        ctx.strokeStyle = '#ffeb3b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    function loop(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+
+        if (isRunning) {
+            const dt = (timestamp - lastTimestamp) / 1000;
+            time += dt;
+            currentDistance = 0.5 * accel * time * time;
+
+            if (currentDistance >= TRACK_LENGTH_METERS) {
+                currentDistance = TRACK_LENGTH_METERS;
+                time = Math.sqrt((2 * currentDistance) / accel);
+                isRunning = false;
+                updateButtonState();
+            }
+        }
+
+        lastTimestamp = timestamp;
+        updateHUD();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    function updateButtonState() {
+        btnStartStop.textContent = isRunning ? "Zatrzymaj" : "Uruchom";
+        btnStartStop.style.background = isRunning ? "#007bff" : "#28a745";
+    }
+
+    inputAccel.addEventListener('input', (e) => {
+        accel = parseFloat(e.target.value);
+        if (currentDistance > 0 && accel > 0) {
+            time = Math.sqrt((2 * currentDistance) / accel);
+        } else {
+            time = 0;
+        }
+        updateHUD();
+        draw();
+    });
+
+    inputStep.addEventListener('input', (e) => {
+        stepValue = parseFloat(e.target.value);
+        updateHUD();
+    });
+
+    btnStartStop.addEventListener('click', () => {
+        if (!isRunning && currentDistance >= TRACK_LENGTH_METERS) {
+            currentDistance = 0;
+            time = 0;
+        }
+        isRunning = !isRunning;
+        updateButtonState();
+    });
+
+    btnPrevDist.addEventListener('click', () => {
+        isRunning = false;
+        updateButtonState();
+        currentDistance = Math.max(0, currentDistance - stepValue);
+        time = Math.sqrt((2 * currentDistance) / accel);
+        updateHUD();
+        draw();
+    });
+
+    btnNextDist.addEventListener('click', () => {
+        isRunning = false;
+        updateButtonState();
+        currentDistance = Math.min(TRACK_LENGTH_METERS, currentDistance + stepValue);
+        time = Math.sqrt((2 * currentDistance) / accel);
+        updateHUD();
+        draw();
+    });
+
+    btnPrevTime.addEventListener('click', () => {
+        isRunning = false;
+        updateButtonState();
+        time = Math.max(0, time - stepValue);
+        currentDistance = 0.5 * accel * time * time;
+        updateHUD();
+        draw();
+    });
+
+    btnNextTime.addEventListener('click', () => {
+        isRunning = false;
+        updateButtonState();
+        time += stepValue;
+        currentDistance = 0.5 * accel * time * time;
+        if (currentDistance >= TRACK_LENGTH_METERS) {
+            currentDistance = TRACK_LENGTH_METERS;
+            time = Math.sqrt((2 * currentDistance) / accel);
+        }
+        updateHUD();
+        draw();
+    });
+
+    btnReset.addEventListener('click', () => {
+        isRunning = false;
+        updateButtonState();
+        currentDistance = 0;
+        time = 0;
+        updateHUD();
+        draw();
+    });
+
+    updateHUD();
+    draw();
+    requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>
