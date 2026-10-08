@@ -44,7 +44,7 @@
             cursor: pointer;
         }
         .nr-val {
-            font-size: 1.3em;
+            font-size: 2.3em;
             font-weight: bold;
             color: #e67e22;
             min-width: 30px;
@@ -141,13 +141,13 @@
 
         /* Pomarańczowy okrągły przycisk */
         .start-btn {
-            width: 110px;
-            height: 110px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background-color: #e67e22;
             border: 4px solid #d35400;
             color: white;
-            font-size: 1.2em;
+            font-size: 2.2em;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.25);
@@ -218,7 +218,7 @@
 <body>
 
     <h2>Laboratorium Fizyczne: Ruch Przyspieszony</h2>
-    
+    <div class="footer">© Wacław Libront • Bobowa 2026</div><br>
     <div class="config-box">
         <label for="nrSlider">Wybierz swój numer z dziennika:</label>
         <div class="slider-container">
@@ -228,7 +228,7 @@
     </div>
 
     <div class="track-container">
-        <div class="status-text" id="liveTime">CZAS = 0,00 s</div>
+        <div class="status-text" id="liveTime">0,00 s</div>
         
         <!-- Nieruchome auto -->
         <div class="car">
@@ -245,7 +245,7 @@
     </div>
 
     <button class="start-btn" id="actionBtn" onclick="handleButtonClick()">START</button>
-    <div class="counter-text" id="clickCounter">Kliknięcia: 0 / 11</div>
+    <div class="counter-text" id="clickCounter"></div>
 
     <div class="table-container" id="resultsContainer">
         <h3>Wyniki pomiarów w ruchu przyspieszonym</h3>
@@ -294,8 +294,8 @@
             // Obliczenie przyspieszenia ze wzoru: a = 5 * NR * 0.5
             acceleration = 5 * nr * 0.5;
             
-            liveTime.innerText = "CZAS = 0,00 s";
-            clickCounter.innerText = `Kliknięcia: 0 / ${maxClicks}`;
+            liveTime.innerText = "0,00 [s]";
+            //clickCounter.innerText = `Pomiar: 0`;
             actionBtn.innerText = "START";
             actionBtn.disabled = false;
             resultsContainer.style.display = "none";
@@ -323,8 +323,8 @@
                 // START eksperymentu
                 startTime = now;
                 lastTimestamp = now;
-                actionBtn.innerText = "KLIK";
-                
+                actionBtn.innerText = "1"//`${clickCount}`
+               
                 // Zapisujemy punkt zero na start listy pomiarowej
                 measurements.push({ time: 0, distance: 0 });
 
@@ -333,7 +333,7 @@
                     if (!startTime) return;
                     
                     const elapsed = (currentTimestamp - startTime) / 1000;
-                    liveTime.innerText = `CZAS = ${elapsed.toFixed(2).replace('.', ',')} s`;
+                    liveTime.innerText = `${elapsed.toFixed(2).replace('.', ',')} [s]`;
                     
                     // Bieżąca prędkość w ruchu przyspieszonym: v = a * t
                     const currentVelocity = acceleration * elapsed;
@@ -359,7 +359,7 @@
                 
                 animationFrameId = requestAnimationFrame(animate);
                 clickCount++;
-                clickCounter.innerText = `Kliknięcia: ${clickCount} / ${maxClicks}`;
+                //clickCounter.innerText = `Pomiar: ${clickCount-1}`;
                 return;
             }
 
@@ -374,8 +374,9 @@
             });
 
             clickCount++;
-            clickCounter.innerText = `Kliknięcia: ${clickCount} / ${maxClicks}`;
-
+            //clickCounter.innerText = `Pomiar: ${clickCount-1}`;
+			actionBtn.innerText = `${clickCount}`
+			
             if (clickCount > maxClicks) {
                 // Zakończenie serii pomiarów po zebraniu 11 pozycji typu KLIK
                 cancelAnimationFrame(animationFrameId);
