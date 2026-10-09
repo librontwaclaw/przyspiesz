@@ -291,8 +291,8 @@
 
         function initLab() {
             nr = parseInt(nrSlider.value);
-            // Obliczenie przyspieszenia ze wzoru: a = 5 * NR * 0.5
-            acceleration = 5 * nr * 0.5;
+            // Obliczenie przyspieszenia ze wzoru: a = 5 + NR * 0.5
+            acceleration = 5 + nr * 0.5;
             
             liveTime.innerText = "0,00 [s]";
             //clickCounter.innerText = `Pomiar: 0`;
